@@ -41,6 +41,10 @@ add_library(skyline SHARED
         ${source_DIR}/skyline/services/sm/sm.cpp
         ${source_DIR}/skyline/services/fatal/fatal.cpp
         ${source_DIR}/skyline/services/set/sys.cpp
+        ${source_DIR}/skyline/services/acc/acc.cpp
+        ${source_DIR}/skyline/services/acc/acc_su.cpp
+        ${source_DIR}/skyline/services/acc/acc_u0.cpp
+        ${source_DIR}/skyline/services/acc/acc_u1.cpp
         ${source_DIR}/skyline/services/apm/apm.cpp
         ${source_DIR}/skyline/services/am/applet.cpp
         ${source_DIR}/skyline/services/am/appletController.cpp

@@ -1,13 +1,21 @@
 #include "apm.h"
 
 namespace skyline::kernel::service::apm {
-    apm::apm(const DeviceState &state, ServiceManager &manager) : BaseService(state, manager, false, Service::apm, {
-        {0x0, SFUNC(apm::OpenSession)}
-    }) {}
+    BaseApm::BaseApm(const DeviceState &state, ServiceManager &manager, Service serviceType, const std::unordered_map<u32, std::function<void(type::KSession &, ipc::IpcRequest &, ipc::IpcResponse &)>> &vTable) : BaseService(state, manager, false, serviceType, vTable) {}
 
-    void apm::OpenSession(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
+    void BaseApm::OpenSession(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response) {
         manager.RegisterService(std::make_shared<ISession>(state, manager), session, response);
     }
+
+    apm::apm(const DeviceState &state, ServiceManager &manager) : BaseApm(state, manager, Service::apm, {
+        {0x0, SFUNC(BaseApm::OpenSession)}
+    }) {}
+
+
+    apmP::apmP(const DeviceState &state, ServiceManager &manager) : BaseApm(state, manager, Service::apm_p, {
+        {0x0, SFUNC(BaseApm::OpenSession)}
+    }) {}
+
 
     ISession::ISession(const DeviceState &state, ServiceManager &manager) : BaseService(state, manager, false, Service::apm_ISession, {
         {0x0, SFUNC(ISession::SetPerformanceConfiguration)},

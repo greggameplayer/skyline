@@ -63,4 +63,15 @@
                 app:title="@string/localization_language"
                 app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
+    <PreferenceCategory
+            android:key="category_user"
+            android:title="User">
+        <EditTextPreference
+                android:defaultValue="Skyline"
+                android:key="user_name"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/user_name"
+                app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

@@ -2,6 +2,10 @@
 #include <kernel/types/KProcess.h>
 #include "sm/sm.h"
 #include "set/sys.h"
+#include "acc/acc.cpp"
+#include "acc/acc_su.cpp"
+#include "acc/acc_u0.cpp"
+#include "acc/acc_u1.cpp"
 #include "apm/apm.h"
 #include "am/applet.h"
 #include "am/appletController.h"
@@ -28,8 +32,23 @@ namespace skyline::kernel::service {
             case Service::set_sys:
                 serviceObj = std::make_shared<set::sys>(state, *this);
                 break;
+            case Service::acc_IProfile:
+                serviceObj = std::make_shared<acc::IProfile>(state, *this);
+                break;
+            case Service::acc_su:
+                serviceObj = std::make_shared<acc::acc_SU>(state, *this);
+                break;
+            case Service::acc_u0:
+                serviceObj = std::make_shared<acc::acc_U0>(state, *this);
+                break;
+            case Service::acc_u1:
+                serviceObj = std::make_shared<acc::acc_U1>(state, *this);
+                break;
             case Service::apm:
                 serviceObj = std::make_shared<apm::apm>(state, *this);
+                break;
+            case Service::apm_p:
+                serviceObj = std::make_shared<apm::apmP>(state, *this);
                 break;
             case Service::apm_ISession:
                 serviceObj = std::make_shared<apm::ISession>(state, *this);

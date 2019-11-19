@@ -4,17 +4,31 @@
 #include <services/serviceman.h>
 
 namespace skyline::kernel::service::apm {
-    /**
-     * @brief apm is used to control performance modes of the device, this service however is mostly only used to open an ISession (https://switchbrew.org/wiki/PPC_services#apm)
-     */
-    class apm : public BaseService {
+
+    class BaseApm : public BaseService {
       public:
-        apm(const DeviceState &state, ServiceManager &manager);
+        BaseApm(const DeviceState &state, ServiceManager &manager, Service serviceType, const std::unordered_map<u32, std::function<void(type::KSession &, ipc::IpcRequest &, ipc::IpcResponse &)>> &vTable);
 
         /**
          * @brief This returns an handle to ISession
          */
         void OpenSession(type::KSession &session, ipc::IpcRequest &request, ipc::IpcResponse &response);
+    };
+
+    /**
+     * @brief apm is used to control performance modes of the device, this service however is mostly only used to open an ISession (https://switchbrew.org/wiki/PPC_services#apm)
+     */
+    class apm : public BaseApm {
+      public:
+        apm(const DeviceState &state, ServiceManager &manager);
+    };
+
+    /**
+     * @brief apm:p is used to control performance modes of the device, this service however is mostly only used to open an ISession (https://switchbrew.org/wiki/PPC_services#apm:p)
+     */
+    class apmP : public BaseApm {
+      public:
+        apmP(const DeviceState &state, ServiceManager &manager);
     };
 
     /**

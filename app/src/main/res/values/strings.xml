@@ -35,4 +35,5 @@
     <string name="use_docked">Use Docked Mode</string>
     <string name="handheld_enabled">The system will emulate being in handheld mode</string>
     <string name="docked_enabled">The system will emulate being in docked mode</string>
+    <string name="user_name">Username</string>
 </resources>
