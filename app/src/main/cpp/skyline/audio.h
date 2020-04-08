@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
 #include <queue>
@@ -21,13 +24,18 @@ namespace skyline::audio {
         Audio(const DeviceState &state);
 
         /**
+         * @brief The destructor for the audio class
+         */
+        ~Audio();
+
+        /**
          * @brief Opens a new track that can be used to play sound
          * @param channelCount The amount channels that are present in the track
          * @param sampleRate The sample rate of the track
          * @param releaseCallback The callback to call when a buffer has been released
          * @return A shared pointer to a new AudioTrack object
          */
-        std::shared_ptr<AudioTrack> OpenTrack(int channelCount, int sampleRate, const std::function<void()> &releaseCallback);
+        std::shared_ptr<AudioTrack> OpenTrack(const int channelCount, const int sampleRate, const std::function<void()> &releaseCallback);
 
         /**
          * @brief Closes a track and frees its data

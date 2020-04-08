@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: LGPL-3.0-or-later
+ * Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+ */
+
 package emu.skyline.adapter
 
 import android.util.SparseIntArray
@@ -6,10 +11,12 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Filter
 import android.widget.Filterable
-import me.xdrop.fuzzywuzzy.FuzzySearch
+import info.debatty.java.stringsimilarity.Cosine
+import info.debatty.java.stringsimilarity.JaroWinkler
 import java.io.*
 import java.util.*
 import kotlin.collections.ArrayList
+
 
 enum class ElementType(val type: Int) {
     Header(0x0),
@@ -17,19 +24,22 @@ enum class ElementType(val type: Int) {
 }
 
 /**
- * @brief This is the interface class that all element classes inherit from
+ * This is an abstract class that all adapter element classes inherit from
  */
 abstract class BaseElement constructor(val elementType: ElementType) : Serializable
 
 /**
- * @brief This is the interface class that all header classes inherit from
+ *  This is an abstract class that all adapter header classes inherit from
  */
 class BaseHeader constructor(val title: String) : BaseElement(ElementType.Header)
 
 /**
- * @brief This is the interface class that all item classes inherit from
+ * This is an abstract class that all adapter item classes inherit from
  */
 abstract class BaseItem : BaseElement(ElementType.Item) {
+    /**
+     * This function returns a string used for searching
+     */
     abstract fun key(): String?
 }
 
@@ -110,9 +120,23 @@ internal abstract class HeaderAdapter<ItemType : BaseItem?, HeaderType : BaseHea
 
     override fun getFilter(): Filter {
         return object : Filter() {
+            inner class ScoredItem(val score: Double, val index: Int, val item:String) {}
+
+            fun extractSorted(term: String, keyArray: ArrayList<String>): Array<ScoredItem> {
+                val scoredItems : MutableList<ScoredItem> = ArrayList()
+
+                val jw = JaroWinkler()
+                val cos = Cosine()
+
+                keyArray.forEachIndexed { index, item -> scoredItems.add(ScoredItem((jw.similarity(term, item) + cos.similarity(term, item)) / 2, index, item)) }
+                scoredItems.sortWith(compareByDescending { it.score })
+
+                return scoredItems.toTypedArray()
+            }
+
             override fun performFiltering(charSequence: CharSequence): FilterResults {
                 val results = FilterResults()
-                searchTerm = (charSequence as String).toLowerCase(Locale.getDefault()).replace(" ".toRegex(), "")
+                searchTerm = (charSequence as String).toLowerCase(Locale.getDefault())
                 if (charSequence.isEmpty()) {
                     results.values = elementArray.indices.toMutableList()
                     results.count = elementArray.size
@@ -127,8 +151,8 @@ internal abstract class HeaderAdapter<ItemType : BaseItem?, HeaderType : BaseHea
                             keyArray.add(item.key()!!.toLowerCase(Locale.getDefault()))
                         }
                     }
-                    val topResults = FuzzySearch.extractSorted(searchTerm, keyArray)
-                    val avgScore: Int = topResults.sumBy { it.score } / topResults.size
+                    val topResults = extractSorted(searchTerm, keyArray)
+                    val avgScore = topResults.sumByDouble { it.score } / topResults.size
                     for (result in topResults)
                         if (result.score > avgScore)
                             filterData.add(keyIndex[result.index])

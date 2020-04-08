@@ -1,141 +1,87 @@
-#include "serviceman.h"
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #include <kernel/types/KProcess.h>
-#include <services/audren/IAudioRendererManager.h>
-#include "sm/sm.h"
-#include "set/sys.h"
-#include "apm/apm.h"
-#include "am/applet.h"
-#include "am/appletController.h"
-#include "audout/audout.h"
-#include "fatal/fatal.h"
-#include "hid/hid.h"
-#include "time/timesrv.h"
-#include "fs/fs.h"
-#include "nvdrv/nvdrv.h"
-#include "vi/vi_m.h"
-#include "nvnflinger/dispdrv.h"
+#include "sm/IUserInterface.h"
+#include "settings/ISystemSettingsServer.h"
+#include "apm/IManager.h"
+#include "am/IApplicationProxyService.h"
+#include "am/IAllSystemAppletProxiesService.h"
+#include "audio/IAudioOutManager.h"
+#include "audio/IAudioRendererManager.h"
+#include "fatalsrv/IService.h"
+#include "hid/IHidServer.h"
+#include "timesrv/IStaticService.h"
+#include "fssrv/IFileSystemProxy.h"
+#include "services/nvdrv/INvDrvServices.h"
+#include "visrv/IManagerRootService.h"
+#include "serviceman.h"
 
 namespace skyline::service {
     ServiceManager::ServiceManager(const DeviceState &state) : state(state) {}
 
-    std::shared_ptr<BaseService> ServiceManager::GetService(const Service serviceType) {
-        if (serviceMap.count(serviceType)) {
-            return serviceMap.at(serviceType);
-        }
+    std::shared_ptr<BaseService> ServiceManager::CreateService(const Service serviceType) {
+        auto serviceIter = serviceMap.find(serviceType);
+        if (serviceIter != serviceMap.end())
+            return (*serviceIter).second;
+
         std::shared_ptr<BaseService> serviceObj;
         switch (serviceType) {
-            case Service::sm:
-                serviceObj = std::make_shared<sm::sm>(state, *this);
+            case Service::sm_IUserInterface:
+                serviceObj = std::make_shared<sm::IUserInterface>(state, *this);
                 break;
-            case Service::fatal_u:
-                serviceObj = std::make_shared<fatal::fatalU>(state, *this);
+            case Service::fatalsrv_IService:
+                serviceObj = std::make_shared<fatalsrv::IService>(state, *this);
                 break;
-            case Service::set_sys:
-                serviceObj = std::make_shared<set::sys>(state, *this);
+            case Service::settings_ISystemSettingsServer:
+                serviceObj = std::make_shared<settings::ISystemSettingsServer>(state, *this);
                 break;
-            case Service::apm:
-                serviceObj = std::make_shared<apm::apm>(state, *this);
+            case Service::apm_IManager:
+                serviceObj = std::make_shared<apm::IManager>(state, *this);
                 break;
-            case Service::apm_ISession:
-                serviceObj = std::make_shared<apm::ISession>(state, *this);
+            case Service::am_IApplicationProxyService:
+                serviceObj = std::make_shared<am::IApplicationProxyService>(state, *this);
                 break;
-            case Service::am_appletOE:
-                serviceObj = std::make_shared<am::appletOE>(state, *this);
+            case Service::am_IAllSystemAppletProxiesService:
+                serviceObj = std::make_shared<am::IAllSystemAppletProxiesService>(state, *this);
                 break;
-            case Service::am_appletAE:
-                serviceObj = std::make_shared<am::appletAE>(state, *this);
+            case Service::audio_IAudioOutManager:
+                serviceObj = std::make_shared<audio::IAudioOutManager>(state, *this);
                 break;
-            case Service::am_IApplicationProxy:
-                serviceObj = std::make_shared<am::IApplicationProxy>(state, *this);
+            case Service::audio_IAudioRendererManager:
+                serviceObj = std::make_shared<audio::IAudioRendererManager>(state, *this);
                 break;
-            case Service::am_ILibraryAppletProxy:
-                serviceObj = std::make_shared<am::ILibraryAppletProxy>(state, *this);
+            case Service::hid_IHidServer:
+                serviceObj = std::make_shared<hid::IHidServer>(state, *this);
                 break;
-            case Service::am_ISystemAppletProxy:
-                serviceObj = std::make_shared<am::ISystemAppletProxy>(state, *this);
+            case Service::timesrv_IStaticService:
+                serviceObj = std::make_shared<timesrv::IStaticService>(state, *this);
                 break;
-            case Service::am_IOverlayAppletProxy:
-                serviceObj = std::make_shared<am::IOverlayAppletProxy>(state, *this);
+            case Service::fssrv_IFileSystemProxy:
+                serviceObj = std::make_shared<fssrv::IFileSystemProxy>(state, *this);
                 break;
-            case Service::am_ICommonStateGetter:
-                serviceObj = std::make_shared<am::ICommonStateGetter>(state, *this);
+            case Service::nvdrv_INvDrvServices:
+                serviceObj = std::make_shared<nvdrv::INvDrvServices>(state, *this);
                 break;
-            case Service::am_IWindowController:
-                serviceObj = std::make_shared<am::IWindowController>(state, *this);
-                break;
-            case Service::am_IAudioController:
-                serviceObj = std::make_shared<am::IAudioController>(state, *this);
-                break;
-            case Service::am_IDisplayController:
-                serviceObj = std::make_shared<am::IDisplayController>(state, *this);
-                break;
-            case Service::am_ISelfController:
-                serviceObj = std::make_shared<am::ISelfController>(state, *this);
-                break;
-            case Service::am_ILibraryAppletCreator:
-                serviceObj = std::make_shared<am::ILibraryAppletCreator>(state, *this);
-                break;
-            case Service::am_IApplicationFunctions:
-                serviceObj = std::make_shared<am::IApplicationFunctions>(state, *this);
-                break;
-            case Service::am_IDebugFunctions:
-                serviceObj = std::make_shared<am::IDebugFunctions>(state, *this);
-                break;
-            case Service::am_IAppletCommonFunctions:
-                serviceObj = std::make_shared<am::IAppletCommonFunctions>(state, *this);
-                break;
-            case Service::audout_u:
-                serviceObj = std::make_shared<audout::audoutU>(state, *this);
-                break;
-            case Service::IAudioRendererManager:
-                serviceObj = std::make_shared<audren::IAudioRendererManager>(state, *this);
-                break;
-            case Service::hid:
-                serviceObj = std::make_shared<hid::hid>(state, *this);
-                break;
-            case Service::hid_IAppletResource:
-                serviceObj = std::make_shared<hid::IAppletResource>(state, *this);
-                break;
-            case Service::time:
-                serviceObj = std::make_shared<time::time>(state, *this);
-                break;
-            case Service::fs_fsp:
-                serviceObj = std::make_shared<fs::fsp>(state, *this);
-                break;
-            case Service::nvdrv:
-                serviceObj = std::make_shared<nvdrv::nvdrv>(state, *this);
-                break;
-            case Service::vi_m:
-                serviceObj = std::make_shared<vi::vi_m>(state, *this);
-                break;
-            case Service::vi_IApplicationDisplayService:
-                serviceObj = std::make_shared<vi::IApplicationDisplayService>(state, *this);
-                break;
-            case Service::vi_ISystemDisplayService:
-                serviceObj = std::make_shared<vi::ISystemDisplayService>(state, *this);
-                break;
-            case Service::vi_IManagerDisplayService:
-                serviceObj = std::make_shared<vi::IManagerDisplayService>(state, *this);
-                break;
-            case Service::nvnflinger_dispdrv:
-                serviceObj = std::make_shared<nvnflinger::dispdrv>(state, *this);
+            case Service::visrv_IManagerRootService:
+                serviceObj = std::make_shared<visrv::IManagerRootService>(state, *this);
                 break;
             default:
-                throw exception("GetService called on missing object, type: {}", serviceType);
+                throw exception("CreateService called on missing object, type: {}", serviceType);
         }
         serviceMap[serviceType] = serviceObj;
         return serviceObj;
     }
 
-    handle_t ServiceManager::NewSession(const Service serviceType) {
+    KHandle ServiceManager::NewSession(const Service serviceType) {
         std::lock_guard serviceGuard(mutex);
-        return state.process->NewHandle<type::KSession>(GetService(serviceType)).handle;
+        return state.process->NewHandle<type::KSession>(CreateService(serviceType)).handle;
     }
 
     std::shared_ptr<BaseService> ServiceManager::NewService(const std::string &serviceName, type::KSession &session, ipc::IpcResponse &response) {
         std::lock_guard serviceGuard(mutex);
-        auto serviceObject = GetService(ServiceString.at(serviceName));
-        handle_t handle{};
+        auto serviceObject = CreateService(ServiceString.at(serviceName));
+        KHandle handle{};
         if (response.isDomain) {
             session.domainTable[++session.handleIndex] = serviceObject;
             response.domainObjects.push_back(session.handleIndex);
@@ -148,9 +94,9 @@ namespace skyline::service {
         return serviceObject;
     }
 
-    void ServiceManager::RegisterService(std::shared_ptr<BaseService> serviceObject, type::KSession &session, ipc::IpcResponse &response) { // NOLINT(performance-unnecessary-value-param)
+    void ServiceManager::RegisterService(std::shared_ptr<BaseService> serviceObject, type::KSession &session, ipc::IpcResponse &response, bool submodule) { // NOLINT(performance-unnecessary-value-param)
         std::lock_guard serviceGuard(mutex);
-        handle_t handle{};
+        KHandle handle{};
         if (response.isDomain) {
             session.domainTable[session.handleIndex] = serviceObject;
             response.domainObjects.push_back(session.handleIndex);
@@ -159,30 +105,26 @@ namespace skyline::service {
             handle = state.process->NewHandle<type::KSession>(serviceObject).handle;
             response.moveHandles.push_back(handle);
         }
-        state.logger->Debug("Service has been registered: \"{}\" (0x{:X})", serviceObject->getName(), handle);
+        if(!submodule)
+            serviceMap[serviceObject->serviceType] = serviceObject;
+        state.logger->Debug("Service has been registered: \"{}\" (0x{:X})", serviceObject->serviceName, handle);
     }
 
-    void ServiceManager::CloseSession(const handle_t handle) {
+    void ServiceManager::CloseSession(const KHandle handle) {
         std::lock_guard serviceGuard(mutex);
         auto session = state.process->GetHandle<type::KSession>(handle);
         if (session->serviceStatus == type::KSession::ServiceStatus::Open) {
             if (session->isDomain) {
                 for (const auto &[objectId, service] : session->domainTable)
                     serviceMap.erase(service->serviceType);
-            } else
+            } else {
                 serviceMap.erase(session->serviceObject->serviceType);
+            }
             session->serviceStatus = type::KSession::ServiceStatus::Closed;
         }
     };
 
-    void ServiceManager::Loop() {
-        std::lock_guard serviceGuard(mutex);
-        for (auto&[type, service] : serviceMap)
-            if (service->hasLoop)
-                service->Loop();
-    }
-
-    void ServiceManager::SyncRequestHandler(const handle_t handle) {
+    void ServiceManager::SyncRequestHandler(const KHandle handle) {
         auto session = state.process->GetHandle<type::KSession>(handle);
         state.logger->Debug("----Start----");
         state.logger->Debug("Handle is 0x{:X}", handle);
@@ -191,7 +133,7 @@ namespace skyline::service {
             ipc::IpcRequest request(session->isDomain, state);
             ipc::IpcResponse response(session->isDomain, state);
 
-            switch (static_cast<ipc::CommandType>(request.header->type)) {
+            switch (request.header->type) {
                 case ipc::CommandType::Request:
                 case ipc::CommandType::RequestWithContext:
                     if (session->isDomain) {
@@ -209,12 +151,12 @@ namespace skyline::service {
                         } catch (std::out_of_range &) {
                             throw exception("Invalid object ID was used with domain request");
                         }
-                    } else
+                    } else {
                         session->serviceObject->HandleRequest(*session, request, response);
+                    }
                     if (!response.nWrite)
                         response.WriteResponse();
                     break;
-
                 case ipc::CommandType::Control:
                 case ipc::CommandType::ControlWithContext:
                     state.logger->Debug("Control IPC Message: 0x{:X}", request.payload->value);
@@ -234,17 +176,16 @@ namespace skyline::service {
                     }
                     response.WriteResponse();
                     break;
-
                 case ipc::CommandType::Close:
                     state.logger->Debug("Closing Session");
                     CloseSession(handle);
                     break;
-
                 default:
-                    throw exception("Unimplemented IPC message type: {}", u16(request.header->type));
+                    throw exception("Unimplemented IPC message type: {}", static_cast<u16>(request.header->type));
             }
-        } else
+        } else {
             state.logger->Warn("svcSendSyncRequest called on closed handle: 0x{:X}", handle);
+        }
         state.logger->Debug("====End====");
     }
 }

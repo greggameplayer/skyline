@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
-#include <sys/mman.h>
 #include <thread>
+#include <sys/mman.h>
 #include "common.h"
 #include "kernel/ipc.h"
 #include "kernel/types/KProcess.h"

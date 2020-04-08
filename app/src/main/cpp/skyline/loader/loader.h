@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
+#include <unistd.h>
 #include <os.h>
 #include <kernel/types/KProcess.h>
-#include <unistd.h>
 
 namespace skyline::loader {
     class Loader {

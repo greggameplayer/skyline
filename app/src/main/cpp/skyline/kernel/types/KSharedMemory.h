@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
 #include "KMemory.h"
@@ -24,7 +27,7 @@ namespace skyline::kernel::type {
              * @brief Returns if the object is valid
              * @return If the MapInfo object is valid
              */
-            inline bool valid() { return address && size && permission.Get(); }
+            inline bool Valid() { return address && size && permission.Get(); }
         } kernel, guest;
 
         /**
@@ -33,8 +36,9 @@ namespace skyline::kernel::type {
          * @param size The size of the allocation on the kernel
          * @param permission The permission of the kernel process
          * @param memState The MemoryState of the chunk of memory
+         * @param mmapFlags Additional flags to pass to mmap
          */
-        KSharedMemory(const DeviceState &state, u64 address, size_t size, const memory::Permission permission, memory::MemoryState memState = memory::MemoryStates::SharedMemory);
+        KSharedMemory(const DeviceState &state, u64 address, size_t size, const memory::Permission permission, memory::MemoryState memState = memory::states::SharedMemory, int mmapFlags = 0);
 
         /**
          * @brief Maps the shared memory in the guest

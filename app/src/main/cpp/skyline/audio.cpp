@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #include "audio.h"
 
 namespace skyline::audio {
@@ -13,7 +16,11 @@ namespace skyline::audio {
         outputStream->requestStart();
     }
 
-    std::shared_ptr<AudioTrack> Audio::OpenTrack(int channelCount, int sampleRate, const std::function<void()> &releaseCallback) {
+    Audio::~Audio() {
+        outputStream->close();
+    }
+
+    std::shared_ptr<AudioTrack> Audio::OpenTrack(const int channelCount, const int sampleRate, const std::function<void()> &releaseCallback) {
         std::shared_ptr<AudioTrack> track = std::make_shared<AudioTrack>(channelCount, sampleRate, releaseCallback);
         audioTracks.push_back(track);
 
@@ -27,7 +34,7 @@ namespace skyline::audio {
 
     oboe::DataCallbackResult Audio::onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
         i16 *destBuffer = static_cast<i16 *>(audioData);
-        int setIndex = 0;
+        uint setIndex = 0;
         size_t sampleI16Size = static_cast<size_t>(numFrames) * audioStream->getChannelCount();
 
         for (auto &track : audioTracks) {

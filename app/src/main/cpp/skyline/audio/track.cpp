@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #include "track.h"
 
 namespace skyline::audio {
-    AudioTrack::AudioTrack(int channelCount, int sampleRate, const std::function<void()> &releaseCallback) : channelCount(channelCount), sampleRate(sampleRate), releaseCallback(releaseCallback) {
+    AudioTrack::AudioTrack(const int channelCount, const int sampleRate, const std::function<void()> &releaseCallback) : channelCount(channelCount), sampleRate(sampleRate), releaseCallback(releaseCallback) {
         if (sampleRate != constant::SampleRate)
             throw exception("Unsupported audio sample rate: {}", sampleRate);
 
@@ -30,7 +33,7 @@ namespace skyline::audio {
     std::vector<u64> AudioTrack::GetReleasedBuffers(u32 max) {
         std::vector<u64> bufferIds;
 
-        for (u32 i = 0; i < max; i++) {
+        for (auto i = 0; i < max; i++) {
             if (!identifierQueue.back().released)
                 break;
             bufferIds.push_back(identifierQueue.back().tag);
@@ -54,7 +57,7 @@ namespace skyline::audio {
         bufferLock.lock();
 
         identifierQueue.push_front(identifier);
-        for (auto &sample : sampleData)
+        for (const auto &sample : sampleData)
             sampleQueue.push(sample);
 
         bufferLock.unlock();

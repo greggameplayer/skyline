@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
-#include "ipc.h"
 #include <common.h>
+#include "ipc.h"
 
 namespace skyline {
     namespace constant::infoState {
@@ -34,7 +37,8 @@ namespace skyline {
         // 6.0.0+
         constexpr u8 TotalMemoryAvailableWithoutMmHeap = 0x15;
         constexpr u8 TotalMemoryUsedWithoutMmHeap = 0x16;
-    };
+    }
+
     namespace kernel::svc {
         /**
          * @brief Sets the process heap to a given Size. It can both extend and shrink the heap. (https://switchbrew.org/wiki/SVC#SetHeapSize)

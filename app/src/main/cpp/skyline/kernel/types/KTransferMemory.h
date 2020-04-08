@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
 #include "KMemory.h"
@@ -23,7 +26,7 @@ namespace skyline::kernel::type {
          * @param type The type of the memory
          * @param memState The MemoryState of the chunk of memory
          */
-        KTransferMemory(const DeviceState &state, bool host, u64 address, size_t size, const memory::Permission permission, memory::MemoryState memState = memory::MemoryStates::TransferMemory);
+        KTransferMemory(const DeviceState &state, bool host, u64 address, size_t size, const memory::Permission permission, memory::MemoryState memState = memory::states::TransferMemory);
 
         /**
          * @brief Transfers this piece of memory to another process

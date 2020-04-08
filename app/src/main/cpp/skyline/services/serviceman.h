@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright © 2020 Skyline Team and Contributors (https://github.com/skyline-emu/)
+
 #pragma once
 
-#include <nce.h>
 #include <kernel/types/KSession.h>
+#include <nce.h>
 #include "base_service.h"
 
 namespace skyline::service {
@@ -15,10 +18,11 @@ namespace skyline::service {
         skyline::Mutex mutex; //!< This mutex is used to ensure concurrent access to services doesn't cause crashes
 
         /**
+         * @brief Creates an instance of the service if it doesn't already exist, otherwise returns an existing instance
          * @param serviceType The type of service requested
          * @return A shared pointer to an instance of the service
          */
-        std::shared_ptr<BaseService> GetService(const Service serviceType);
+        std::shared_ptr<BaseService> CreateService(const Service serviceType);
 
       public:
         /**
@@ -31,7 +35,7 @@ namespace skyline::service {
          * @param serviceType The type of the service
          * @return Handle to KService object of the service
          */
-        handle_t NewSession(const Service serviceType);
+        KHandle NewSession(const Service serviceType);
 
         /**
          * @brief Creates a new service using it's type enum and writes it's handle or virtual handle (If it's a domain request) to IpcResponse
@@ -46,24 +50,31 @@ namespace skyline::service {
          * @param serviceObject An instance of the service
          * @param session The session object of the command
          * @param response The response object to write the handle or virtual handle to
+         * @param submodule If the registered service is a submodule or not
          */
-        void RegisterService(std::shared_ptr<BaseService> serviceObject, type::KSession &session, ipc::IpcResponse &response);
+        void RegisterService(std::shared_ptr<BaseService> serviceObject, type::KSession &session, ipc::IpcResponse &response, bool submodule = true);
+
+        /**
+         * @param serviceType The type of the service
+         * @tparam The class of the service
+         * @return A shared pointer to an instance of the service
+         * @note This only works for services created with `NewService` as sub-interfaces used with `RegisterService` can have multiple instances
+         */
+        template<typename Type>
+        inline std::shared_ptr<Type> GetService(const Service serviceType) {
+            return std::static_pointer_cast<Type>(serviceMap.at(serviceType));
+        }
 
         /**
          * @brief Closes an existing session to a service
          * @param service The handle of the KService object
          */
-        void CloseSession(const handle_t handle);
-
-        /**
-         * @brief This is a function where the Services get to run their core event loops
-         */
-        void Loop();
+        void CloseSession(const KHandle handle);
 
         /**
          * @brief Handles a Synchronous IPC Request
          * @param handle The handle of the object
          */
-        void SyncRequestHandler(const handle_t handle);
+        void SyncRequestHandler(const KHandle handle);
     };
 }
