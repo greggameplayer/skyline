@@ -46,6 +46,11 @@ namespace skyline {
         void SetHeapSize(DeviceState &state);
 
         /**
+         * @brief Maps a memory heap memory area for use by the guest. (https://switchbrew.org/wiki/SVC#MapPhysicalMemory)
+         */
+        void MapPhysicalMemory(DeviceState &state);
+
+        /**
          * @brief Change attribute of page-aligned memory region. This is used to turn on/off caching for a given memory area. (https://switchbrew.org/wiki/SVC#SetMemoryAttribute)
          */
         void SetMemoryAttribute(DeviceState &state);
@@ -54,6 +59,8 @@ namespace skyline {
          * @brief Maps a memory range into a different range. Mainly used for adding guard pages around stack. (https://switchbrew.org/wiki/SVC#SetMemoryAttribute)
          */
         void MapMemory(DeviceState &state);
+
+
 
         /**
          * @brief Unmaps a region that was previously mapped with #MapMemory. (https://switchbrew.org/wiki/SVC#UnmapMemory)
@@ -99,6 +106,16 @@ namespace skyline {
          * @brief Set priority of provided thread handle (https://switchbrew.org/wiki/SVC#SetThreadPriority)
          */
         void SetThreadPriority(DeviceState &state);
+
+		/**
+         * @brief Sets the core mask for the given thread (https://switchbrew.org/wiki/SVC#SetThreadCoreMask)
+         */
+        void SetThreadCoreMask(DeviceState &state);
+
+        /**
+         * @brief Gets the current processor number (https://switchbrew.org/wiki/SVC#GetCurrentProcessorNumber)
+         */
+        void GetCurrentProcessorNumber(DeviceState &state);
 
         /**
          * @brief Clears a KEvent of it's signal (https://switchbrew.org/wiki/SVC#ClearEvent)
@@ -185,6 +202,10 @@ namespace skyline {
          */
         void GetInfo(DeviceState &state);
 
+        void WaitForAddress(DeviceState &state);
+        void SignalToAddress(DeviceState &state);
+
+
         /**
          * @brief The SVC Table maps all SVCs to their corresponding functions
          */
@@ -204,8 +225,8 @@ namespace skyline {
             GetThreadPriority, // 0x0C
             SetThreadPriority, // 0x0D
             nullptr, // 0x0E
-            nullptr, // 0x0F
-            nullptr, // 0x10
+            SetThreadCoreMask, // 0x0F
+            GetCurrentProcessorNumber, // 0x10
             nullptr, // 0x11
             ClearEvent, // 0x12
             MapSharedMemory, // 0x13
@@ -233,7 +254,7 @@ namespace skyline {
             GetInfo, // 0x29
             nullptr, // 0x2A
             nullptr, // 0x2B
-            nullptr, // 0x2C
+            MapPhysicalMemory, // 0x2C
             nullptr, // 0x2D
             nullptr, // 0x2E
             nullptr, // 0x2F
@@ -241,8 +262,8 @@ namespace skyline {
             nullptr, // 0x31
             nullptr, // 0x32
             nullptr, // 0x33
-            nullptr, // 0x34
-            nullptr, // 0x35
+            WaitForAddress, // 0x34
+            SignalToAddress, // 0x35
             nullptr, // 0x36
             nullptr, // 0x37
             nullptr, // 0x38
@@ -295,7 +316,7 @@ namespace skyline {
             nullptr, // 0x67
             nullptr, // 0x68
             nullptr, // 0x69
-            nullptr, // 0x6A
+	nullptr, // 0x6A
             nullptr, // 0x6B
             nullptr, // 0x6C
             nullptr, // 0x6D
