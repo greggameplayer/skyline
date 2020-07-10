@@ -39,7 +39,7 @@ namespace skyline::kernel::type {
         this->priority = priority;
         auto priorityValue = androidPriority.Rescale(switchPriority, priority);
 
-        if (setpriority(PRIO_PROCESS, static_cast<id_t>(tid), priorityValue) == -1)
-            throw exception("Couldn't set process priority to {} for PID: {}", priorityValue, tid);
+//        if (setpriority(PRIO_PROCESS, static_cast<id_t>(tid), priorityValue) == -1)
+//            throw exception("Couldn't set process priority to {} for PID: {}", priorityValue, tid);
     }
 }

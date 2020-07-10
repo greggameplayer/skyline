@@ -283,9 +283,11 @@ namespace skyline::kernel::type {
 
         bool timedOut{};
         auto start = util::GetTimeNs();
-        while (!status->flag)
+        while (!status->flag) {
             if ((util::GetTimeNs() - start) >= timeout)
                 timedOut = true;
+            std::this_thread::yield();
+        }
 
         lock.lock();
 
@@ -314,7 +316,7 @@ namespace skyline::kernel::type {
 
         auto iter = condWaiters.begin();
         while (iter != condWaiters.end() && count < amount) {
-            auto &thread = *iter;
+            auto thread = *iter;
             auto mtx = GetPointer<u32>(thread->mutexAddress);
             u32 mtxValue = __atomic_load_n(mtx, __ATOMIC_SEQ_CST);
 

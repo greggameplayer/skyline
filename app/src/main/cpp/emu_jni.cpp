@@ -39,7 +39,6 @@ extern "C" JNIEXPORT void Java_emu_skyline_EmulationActivity_executeApplication(
     std::signal(SIGABRT, signalHandler);
     std::signal(SIGFPE, signalHandler);
 
-    setpriority(PRIO_PROCESS, static_cast<id_t>(gettid()), -8); // Set the priority of this process to the highest value
 
     auto jvmManager = std::make_shared<skyline::JvmManager>(env, instance);
     auto settings = std::make_shared<skyline::Settings>(preferenceFd);

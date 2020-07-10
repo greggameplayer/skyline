@@ -7,6 +7,8 @@
 #include <asm/siginfo.h>
 #include <unistd.h>
 #include <asm/unistd.h>
+#include <linux/futex.h>
+#include <syscall.h>
 #include "guest_common.h"
 
 namespace skyline::guest {
@@ -127,10 +129,20 @@ namespace skyline::guest {
             return;
         }
 
+        ctx->futex = 1;
+        asm("MOV X0, %0\n\t"
+            "MOV X1, %1\n\t"
+            "MOV X2, %2\n\t"
+            "MOV X8, %3\n\t"
+            "SVC #0\n\t" : : "r"((u64)&ctx->futex), "r"((u64)FUTEX_WAKE), "r"((u64)1), "r"((u64)SYS_futex) : "x0", "x1", "x2", "x8");
+
         while (true) {
             ctx->state = ThreadState::WaitKernel;
 
-            while (ctx->state == ThreadState::WaitKernel);
+            while (ctx->state == ThreadState::WaitKernel) {
+                asm("MOV X8, #124\n\t"
+                    "SVC #0\n\t" : : : "x8", "x0");
+            }
 
             if (ctx->state == ThreadState::WaitRun) {
                 break;
