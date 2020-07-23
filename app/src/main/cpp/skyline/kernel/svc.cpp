@@ -35,6 +35,8 @@ namespace skyline::kernel::svc {
     }
 
     void SetMemoryAttribute(DeviceState &state) {
+        state.ctx->registers.w0 = constant::status::Success;
+        return;
         auto address = state.ctx->registers.x0;
         if (!util::PageAligned(address)) {
             state.ctx->registers.w0 = result::InvalidAddress;
@@ -660,6 +662,7 @@ namespace skyline::kernel::svc {
 
         switch (id0) {
             case constant::infoState::AllowedCpuIdBitmask:
+                out = 15;
             case constant::infoState::AllowedThreadPriorityMask:
             case constant::infoState::IsCurrentProcessBeingDebugged:
             case constant::infoState::TitleId:

@@ -139,7 +139,7 @@ namespace skyline {
     }
 
     void Logger::Write(LogLevel level, std::string str) {
-        syslog(levelSyslog[static_cast<u8>(level)], "%s", str.c_str());
+        syslog(levelSyslog[static_cast<u8>(level)], "%s\n", str.c_str());
 
         for (auto &character : str)
             if (character == '\n')

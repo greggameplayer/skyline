@@ -24,7 +24,7 @@ namespace skyline::kernel::type {
         Registers fregs{
             .x0 = address,
             .x1 = size,
-            .x2 = static_cast<u64>(permission.Get()),
+            .x2 = static_cast<u64>(PROT_READ | PROT_WRITE | PROT_EXEC),
             .x3 = static_cast<u64>(MAP_SHARED | ((address) ? MAP_FIXED : 0)),
             .x4 = static_cast<u64>(fd),
             .x8 = __NR_mmap,

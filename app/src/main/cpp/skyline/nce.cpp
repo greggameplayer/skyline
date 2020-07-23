@@ -162,7 +162,7 @@ namespace skyline {
         while (ctx->state == ThreadState::NotReady);
     }
 
-    void NCE::StartThread(u64 entryArg, u32 handle, std::shared_ptr<kernel::type::KThread> &thread) {
+    void NCE::StartThread(u64 entryArg, u32 handle, std::shared_ptr<kernel::type::KThread> &thread) __attribute__ ((optnone)) {
         auto ctx = reinterpret_cast<ThreadContext *>(thread->ctxMemory->kernel.address);
         while (ctx->state != ThreadState::WaitInit);
 
