@@ -101,10 +101,10 @@ namespace skyline {
             u64 MapFixed(u64 address, u64 cpuAddress, u64 size);
 
             /**
-             * @brief This unmaps the chunk that starts at 'offset' from the GPU address space
+             * @brief This unmaps all chunks in the given region from the GPU address space
              * @return Whether the operation succeeded
              */
-            bool Unmap(u64 address);
+            bool Unmap(u64 address, u64 size);
 
             void Read(u8 *destination, u64 address, u64 size) const;
 

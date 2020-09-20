@@ -98,7 +98,7 @@ namespace skyline::gpu::vmm {
 
     u64 MemoryManager::ReserveFixed(u64 address, u64 size) {
         if (!util::IsAligned(address, constant::GpuPageSize))
-            return false;
+            return 0;
 
         size = util::AlignUp(size, constant::GpuPageSize);
 
@@ -121,26 +121,23 @@ namespace skyline::gpu::vmm {
 
     u64 MemoryManager::MapFixed(u64 address, u64 cpuAddress, u64 size) {
         if (!util::IsAligned(address, constant::GpuPageSize))
-            return false;
+            return 0;
 
         size = util::AlignUp(size, constant::GpuPageSize);
 
         return InsertChunk(ChunkDescriptor(address, size, cpuAddress, ChunkState::Mapped));
     }
 
-    bool MemoryManager::Unmap(u64 address) {
+    bool MemoryManager::Unmap(u64 address, u64 size) {
         if (!util::IsAligned(address, constant::GpuPageSize))
             return false;
 
-        auto chunk = std::find_if(chunkList.begin(), chunkList.end(), [address](const ChunkDescriptor &chunk) -> bool {
-            return chunk.address == address;
-        });
-
-        if (chunk == chunkList.end())
+        // InsertChunk handles all the merging and splitting of chunks for us.
+        try {
+            InsertChunk(ChunkDescriptor(address, size, 0, ChunkState::Unmapped));
+        } catch (const std::exception &e) {
             return false;
-
-        chunk->state = ChunkState::Reserved;
-        chunk->cpuAddress = 0;
+        }
 
         return true;
     }
