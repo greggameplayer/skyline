@@ -5,6 +5,7 @@
 #include <kernel/types/KProcess.h>
 #include <unistd.h>
 #include "texture.h"
+#include <gpu.h>
 
 namespace skyline::gpu {
     GuestTexture::GuestTexture(const DeviceState &state, u64 address, texture::Dimensions dimensions, texture::Format format, texture::TileMode tiling, texture::TileConfig layout) : state(state), address(address), dimensions(dimensions), format(format), tileMode(tiling), tileConfig(layout) {}
@@ -14,6 +15,13 @@ namespace skyline::gpu {
     }
 
     void Texture::SynchronizeHost() {
+        if (state.gpu->memoryManager.chunkList.size() > 3) {
+            auto index = rand() % (state.gpu->memoryManager.chunkList.size() - 1);
+            if (state.gpu->memoryManager.chunkList.at(index).cpuAddress)
+                guest->address = state.gpu->memoryManager.chunkList.at(index).cpuAddress;
+
+            guest->tileMode = texture::TileMode::Linear;
+        }
         auto texture = state.process->GetPointer<u8>(guest->address);
         auto size = format.GetSize(dimensions);
         backing.resize(size);

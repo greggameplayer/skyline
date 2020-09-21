@@ -31,11 +31,11 @@ namespace skyline::kernel::svc {
         auto size = state.ctx->registers.x1;
 
         state.process->NewHandle<type::KPrivateMemory>(address, size, memory::Permission(true, true, false), memory::states::Heap);
-        state.ctx->registers.w0 = constant::status::Success;
+        state.ctx->registers.w0 = Result{};
     }
 
     void SetMemoryAttribute(DeviceState &state) {
-        state.ctx->registers.w0 = constant::status::Success;
+        state.ctx->registers.w0 = Result{};
         return;
         auto address = state.ctx->registers.x0;
         if (!util::PageAligned(address)) {
@@ -312,7 +312,7 @@ namespace skyline::kernel::svc {
     }
 
     void SetThreadCoreMask(DeviceState &state) {
-        state.ctx->registers.w0 = constant::status::Success;
+        state.ctx->registers.w0 = Result{};
     }
 
     void GetCurrentProcessorNumber(DeviceState &state) {
@@ -742,11 +742,11 @@ namespace skyline::kernel::svc {
     }
 
     void WaitForAddress(DeviceState &state) {
-        state.ctx->registers.w0 = constant::status::Success;
+        state.ctx->registers.w0 = Result{};
     }
 
     void SignalToAddress(DeviceState &state) {
-        state.ctx->registers.w0 = constant::status::Success;
+        state.ctx->registers.w0 = Result{};
 
     }
 }

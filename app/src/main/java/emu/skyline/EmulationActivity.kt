@@ -192,7 +192,7 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback, View.OnTo
         emulationThread = Thread {
             surfaceReady.block()
 
-            executeApplication(rom.toString(), romType, romFd.fd, preferenceFd.fd, applicationContext.filesDir.canonicalPath + "/")
+            executeApplication(rom.toString(), romType, romFd.detachFd(), preferenceFd.detachFd(), applicationContext.filesDir.canonicalPath + "/")
 
             if (shouldFinish)
                 runOnUiThread { finish() }
@@ -277,6 +277,7 @@ class EmulationActivity : AppCompatActivity(), SurfaceHolder.Callback, View.OnTo
 
         setHalt(true)
         emulationThread.join(1000)
+
 
         vibrators.forEach { (_, vibrator) -> vibrator.cancel() }
         vibrators.clear()
