@@ -7,15 +7,7 @@
 #include "devices/nvdevice.h"
 
 namespace skyline::service::nvdrv {
-    INvDrvServices::INvDrvServices(const DeviceState &state, ServiceManager &manager) : driver(nvdrv::driver.expired() ? std::make_shared<Driver>(state) : nvdrv::driver.lock()), BaseService(state, manager, {
-        {0x0, SFUNC(INvDrvServices::Open)},
-        {0x1, SFUNC(INvDrvServices::Ioctl)},
-        {0x2, SFUNC(INvDrvServices::Close)},
-        {0x3, SFUNC(INvDrvServices::Initialize)},
-        {0x4, SFUNC(INvDrvServices::QueryEvent)},
-        {0x8, SFUNC(INvDrvServices::SetAruid)},
-        {0xD, SFUNC(INvDrvServices::SetGraphicsFirmwareMemoryMarginEnabled)}
-    }) {
+    INvDrvServices::INvDrvServices(const DeviceState &state, ServiceManager &manager) : driver(nvdrv::driver.expired() ? std::make_shared<Driver>(state) : nvdrv::driver.lock()), BaseService(state, manager) {
         if (nvdrv::driver.expired())
             nvdrv::driver = driver;
     }
@@ -42,18 +34,18 @@ namespace skyline::service::nvdrv {
         std::optional<kernel::ipc::IpcBuffer> buffer{std::nullopt};
         if (request.inputBuf.empty() || request.outputBuf.empty()) {
             if (!request.inputBuf.empty())
-                buffer = request.inputBuf.at(0);
+                buffer = request.inputBuf[0];
             else if (!request.outputBuf.empty())
-                buffer = request.outputBuf.at(0);
+                buffer = request.outputBuf[0];
             else
                 throw exception("No IOCTL Buffers");
-        } else if (request.inputBuf.at(0).address == request.outputBuf.at(0).address) {
-            buffer = request.inputBuf.at(0);
+        } else if (request.inputBuf[0].address == request.outputBuf[0].address) {
+            buffer = request.inputBuf[0];
         } else {
             throw exception("IOCTL Input Buffer (0x{:X}) != Output Buffer (0x{:X})", request.inputBuf[0].address, request.outputBuf[0].address);
         }
 
-        response.Push(device->HandleIoctl(cmd, device::IoctlType::Ioctl, std::span<u8>(reinterpret_cast<u8 *>(buffer->address), buffer->size), {}));
+        response.Push(device->HandleIoctl(cmd, device::IoctlType::Ioctl, std::span<u8>(state.process->GetPointer<u8>(buffer->address), buffer->size), {}));
         return {};
     }
 
@@ -112,7 +104,7 @@ namespace skyline::service::nvdrv {
         else if (request.inputBuf[0].address != request.outputBuf[0].address)
             throw exception("IOCTL2 Input Buffer (0x{:X}) != Output Buffer (0x{:X}) [Input Buffer #2: 0x{:X}]", request.inputBuf[0].address, request.outputBuf[0].address, request.inputBuf[1].address);
 
-        response.Push(device->HandleIoctl(cmd, device::IoctlType::Ioctl2, std::span<u8>(reinterpret_cast<u8 *>(request.inputBuf[0].address), request.inputBuf[0].size), std::span<u8>(reinterpret_cast<u8 *>(request.inputBuf[1].address), request.inputBuf[1].size)));
+        response.Push(device->HandleIoctl(cmd, device::IoctlType::Ioctl2, std::span<u8>(state.process->GetPointer<u8>(request.inputBuf[0].address), request.inputBuf[0].size), std::span<u8>(state.process->GetPointer<u8>(request.inputBuf[1].address), request.inputBuf[1].size)));
         return {};
     }
 
@@ -130,7 +122,7 @@ namespace skyline::service::nvdrv {
         else if (request.inputBuf[0].address != request.outputBuf[0].address)
             throw exception("IOCTL3 Input Buffer (0x{:X}) != Output Buffer (0x{:X}) [Output Buffer #2: 0x{:X}]", request.inputBuf[0].address, request.outputBuf[0].address, request.outputBuf[1].address);
 
-        response.Push(device->HandleIoctl(cmd, device::IoctlType::Ioctl3, std::span<u8>(reinterpret_cast<u8 *>(request.inputBuf[0].address), request.inputBuf[0].size), std::span<u8>(reinterpret_cast<u8 *>(request.outputBuf[1].address), request.outputBuf[1].size)));
+        response.Push(device->HandleIoctl(cmd, device::IoctlType::Ioctl3, std::span<u8>(state.process->GetPointer<u8>(request.inputBuf[0].address), request.inputBuf[0].size), std::span<u8>(state.process->GetPointer<u8>(request.outputBuf[1].address), request.outputBuf[1].size)));
         return {};
     }
 

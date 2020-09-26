@@ -223,7 +223,7 @@ namespace skyline {
             u64 address; //!< The address of the current block
             u64 size; //!< The size of the current block in bytes
             memory::Permission permission; //!< The permissions applied to the current block
-            memory::MemoryAttribute attributes; //!< The MemoryAttribute for the current block
+            memory::MemoryAttribute attributes{false, false, true, true}; //!< The MemoryAttribute for the current block
         };
 
         /**

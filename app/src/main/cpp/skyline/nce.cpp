@@ -3,6 +3,10 @@
 
 #include <sched.h>
 #include <unistd.h>
+#include <sys/syscall.h>
+#include <linux/futex.h>
+#include <sys/time.h>
+
 #include "os.h"
 #include "jvm.h"
 #include "nce/guest.h"
@@ -15,6 +19,12 @@ extern jobject Surface;
 extern skyline::GroupMutex JniMtx;
 
 namespace skyline {
+    static int futex(int *uaddr, int futex_op, int val, const struct timespec *timeout, int *uaddr2, int val3)
+    {
+        return syscall(SYS_futex, uaddr, futex_op, val, timeout, uaddr2, val3);
+    }
+
+
     void NCE::KernelThread(pid_t thread) {
         state.jvm->AttachThread();
         try {
@@ -22,7 +32,12 @@ namespace skyline {
             state.ctx = reinterpret_cast<ThreadContext *>(state.thread->ctxMemory->kernel.address);
 
             while (true) {
-                asm("yield");
+                while (state.ctx->futex == 0) {
+                    int rc = futex(&state.ctx->futex, FUTEX_WAIT, 0, nullptr, nullptr, 0);
+                    if (rc == -1 && errno != EAGAIN)
+                        throw exception("Futex error");
+
+                }
 
                 if (__predict_false(Halt))
                     break;
@@ -47,9 +62,9 @@ namespace skyline {
                             throw exception("Unimplemented SVC 0x{:X}", svc);
                         }
                     } catch (const std::exception &e) {
-                        throw exception("{} (SVC: 0x{:X})", e.what(), svc);
                     }
 
+                    state.ctx->futex = 0;
                     state.ctx->state = ThreadState::WaitRun;
                 } else if (__predict_false(state.ctx->state == ThreadState::GuestCrash)) {
                     state.logger->Warn("Thread with PID {} has crashed due to signal: {}", thread, strsignal(state.ctx->svc));
@@ -147,7 +162,7 @@ namespace skyline {
         while (ctx->state == ThreadState::NotReady);
     }
 
-    void NCE::StartThread(u64 entryArg, u32 handle, std::shared_ptr<kernel::type::KThread> &thread) {
+    void NCE::StartThread(u64 entryArg, u32 handle, std::shared_ptr<kernel::type::KThread> &thread) __attribute__ ((optnone)) {
         auto ctx = reinterpret_cast<ThreadContext *>(thread->ctxMemory->kernel.address);
         while (ctx->state != ThreadState::WaitInit);
 

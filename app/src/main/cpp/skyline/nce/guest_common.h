@@ -158,5 +158,6 @@ namespace skyline {
         u64 tpidrEl0; //!< The value for TPIDR_EL0 for the current thread
         u64 faultAddress; //!< The address a fault has occurred at during guest crash
         u64 sp; //!< The current location of the stack pointer set during guest crash
+        int futex;
     };
 }

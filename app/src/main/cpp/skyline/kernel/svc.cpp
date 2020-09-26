@@ -26,7 +26,17 @@ namespace skyline::kernel::svc {
         state.logger->Debug("svcSetHeapSize: Allocated at 0x{:X} for 0x{:X} bytes", heap->address, heap->size);
     }
 
+    void MapPhysicalMemory(DeviceState &state) {
+        auto address = state.ctx->registers.x0;
+        auto size = state.ctx->registers.x1;
+
+        state.process->NewHandle<type::KPrivateMemory>(address, size, memory::Permission(true, true, false), memory::states::Heap);
+        state.ctx->registers.w0 = Result{};
+    }
+
     void SetMemoryAttribute(DeviceState &state) {
+        state.ctx->registers.w0 = Result{};
+        return;
         auto address = state.ctx->registers.x0;
         if (!util::PageAligned(address)) {
             state.ctx->registers.w0 = result::InvalidAddress;
@@ -299,6 +309,14 @@ namespace skyline::kernel::svc {
             state.logger->Warn("svcSetThreadPriority: 'handle' invalid: 0x{:X}", handle);
             state.ctx->registers.w0 = result::InvalidHandle;
         }
+    }
+
+    void SetThreadCoreMask(DeviceState &state) {
+        state.ctx->registers.w0 = Result{};
+    }
+
+    void GetCurrentProcessorNumber(DeviceState &state) {
+        state.ctx->registers.w0 = 0;
     }
 
     void ClearEvent(DeviceState &state) {
@@ -644,6 +662,7 @@ namespace skyline::kernel::svc {
 
         switch (id0) {
             case constant::infoState::AllowedCpuIdBitmask:
+                out = 15;
             case constant::infoState::AllowedThreadPriorityMask:
             case constant::infoState::IsCurrentProcessBeingDebugged:
             case constant::infoState::TitleId:
@@ -720,5 +739,14 @@ namespace skyline::kernel::svc {
 
         state.ctx->registers.x1 = out;
         state.ctx->registers.w0 = Result{};
+    }
+
+    void WaitForAddress(DeviceState &state) {
+        state.ctx->registers.w0 = Result{};
+    }
+
+    void SignalToAddress(DeviceState &state) {
+        state.ctx->registers.w0 = Result{};
+
     }
 }
